@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Life Planner</title>
+  <meta name="description" content="Plan tasks and events.">
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container header-row">
+      <div class="brand">
+        <h1>Campus Life Planner</h1>
+      </div>
+      <nav aria-label="Main">
+        <ul class="nav-list">
+          <li><a href="#dashboard" aria-current="page">Dashboard</a></li>
+          <li><a href="#activities">Activities</a></li>
+          <li><a href="#add">Add</a></li>
+          <li><a href="#settings">Settings</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1" class="container">
+    <p id="save-status" class="status-line" role="status" aria-live="polite"></p>
+
+    <!-- Dashboard section -->
+    <section id="dashboard" aria-labelledby="dash-h">
+      <h2 id="dash-h">Good morning</h2>
+      <p class="dashboard-subtitle">Stay focused</p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label">Total activities</span>
+          <span class="stat-value" id="stat-total">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total time</span>
+          <span class="stat-value" id="stat-duration">0 min</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Top tag</span>
+          <span class="stat-value" id="stat-tag">None yet</span>
+        </div>
+      </div>
+
+      <div class="panel target-panel">
+        <h3>Duration target</h3>
+        <progress id="target-progress" value="0" max="1" aria-label="The planned time compared with target"></progress>
+        <p id="target-status" aria-live="polite"></p>
+        <p id="target-alert" class="alert" role="alert"></p>
+        <p class="hint">The target compares with the total duration of all saved activities.</p>
+      </div>
+
+      <div class="panel trend-panel">
+        <h3>Last 7 days (planned time by due date)</h3>
+        <ol id="trend" class="trend" aria-label="Planned time for each of the last seven days"></ol>
+      </div>
+    </section>
+
+    <div class="split">
+      <!-- Activities section  -->
+      <section id="activities" aria-labelledby="act-h">
+        <h2 id="act-h">Activities</h2>
+
+        <div class="toolbar">
+          <div class="field grow">
+            <label for="search">Search with a regex</label>
+            <input id="search" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="e.g. ^Study|exam$" aria-describedby="regex-error result-count">
+          </div>
+          <div class="field">
+            <label for="sort">Sort by</label>
+            <select id="sort">
+              <option value="due-asc">Due date (earliest)</option>
+              <option value="due-desc">Due date (latest)</option>
+              <option value="title-asc">Title (A to Z)</option>
+              <option value="title-desc">Title (Z to A)</option>
+              <option value="dur-asc">Duration (shortest)</option>
+              <option value="dur-desc">Duration (longest)</option>
+            </select>
+          </div>
+          <label class="check"><input id="case-insensitive" type="checkbox" checked> Ignore case</label>
+        </div>
+
+        <p id="regex-error" class="error" role="alert"></p>
+        <p id="result-count" class="hint" role="status" aria-live="polite"></p>
+
+        <div id="empty-state" class="empty" hidden>
+          <p><strong>No activities yet.</strong> Add your first task or event, or try the sample data.</p>
+          <button type="button" id="load-sample-inline" class="btn">Load sample data</button>
+        </div>
+        <p id="no-matches" class="empty" hidden>No activities match that search.</p>
+
+        <ul id="list" class="cards"></ul>
+      </section>
+
+      <!-- Add and edit section -->
+      <section id="add" aria-labelledby="form-heading" class="panel">
+        <h2 id="form-heading">Add activity</h2>
+        <form id="activity-form" novalidate>
+          <div class="field">
+            <label for="f-type">Type</label>
+            <select id="f-type" aria-describedby="err-type" aria-invalid="false">
+              <option value="task">Task</option>
+              <option value="event">Event</option>
+            </select>
+            <p class="error" id="err-type"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-title">Title</label>
+            <input id="f-title" type="text" autocomplete="off" aria-describedby="err-title" aria-invalid="false">
+            <p class="error" id="err-title"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-date">Due date</label>
+            <input id="f-date" type="date" aria-describedby="hint-date err-date" aria-invalid="false">
+            <p class="hint" id="hint-date">YYYY-MM-DD</p>
+            <p class="error" id="err-date"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-duration">Duration</label>
+            <input id="f-duration" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-duration" aria-invalid="false">
+            <p class="error" id="err-duration"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-tag">Tag</label>
+            <input id="f-tag" type="text" list="tag-options" autocomplete="off" aria-describedby="err-tag" aria-invalid="false">
+            <datalist id="tag-options">
+              <option value="Study"></option>
+              <option value="Assignment"></option>
+              <option value="Exam"></option>
+              <option value="Club"></option>
+              <option value="Personal"></option>
+            </datalist>
+            <p class="error" id="err-tag"></p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="save-btn" class="btn btn-primary">Add activity</button>
+            <button type="button" id="cancel-edit" class="btn" hidden>Cancel</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Settings section -->
+    <section id="settings" aria-labelledby="set-h">
+      <h2 id="set-h">Settings</h2>
+      <div class="panel settings-grid">
+        <div class="field">
+          <label for="target">Duration target (<span id="target-label-unit">minutes</span>)</label>
+          <input id="target" type="number" min="0" step="any" aria-describedby="target-error">
+          <p class="error" id="target-error"></p>
+        </div>
+        <div class="field">
+          <label for="unit">Show durations in</label>
+          <select id="unit">
+            <option value="min">Minutes</option>
+            <option value="hr">Hours</option>
+          </select>
+          <p class="hint">60 minutes = 1 hour.</p>
+        </div>
+      </div>
+
+      <div class="panel data-panel">
+        <h3>Your data</h3>
+        <div class="button-row">
+          <button type="button" id="export-btn" class="btn">Export JSON</button>
+          <input id="import-file" class="visually-hidden-file" type="file" accept="application/json,.json">
+          <label class="btn file-btn" for="import-file">Import JSON</label>
+          <button type="button" id="load-sample" class="btn">Load sample data</button>
+          <button type="button" id="clear-all" class="btn btn-danger">Delete all</button>
+        </div>
+        <p id="import-error" class="error" role="alert"></p>
+        <p id="import-ok" class="ok" role="status"></p>
+      </div>
+    </section>
+
+    <!-- About section -->
+    <section id="about" aria-labelledby="about-h">
+      <h2 id="about-h">About</h2>
+      <div class="panel">
+        <p>Campus Life Planner helps students keep track of assignments, study sessions, club meetings and exams, see how much time they have planned, and stay under a workload target.</p>
+        <p>Built with plain HTML, CSS and JavaScript. All data stays in your browser.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><p>Campus Life Planner</p></div>
+  </footer>
+
+</body>
+</html>
